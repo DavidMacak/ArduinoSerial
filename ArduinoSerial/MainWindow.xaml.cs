@@ -32,7 +32,7 @@
  /* Seznam změn
   * 
   * v1.1
-  * Zmena rozmeru tlacitek.
+  * Zmena rozmeru tlacitek. Posilani informaci do seriove linky. 
   * 
   * 
   * v1.0
@@ -83,7 +83,7 @@ namespace ArduinoSerial
         public MainWindow()
         {
             InitializeComponent();
-            findComPorts();
+            FindComPorts();
             _serialPort = new SerialPort();                                                                          //vytvori objekt SerialPort s parametry ktere se doplni po kliknuti
             
             foreach(int rate in baudrateValues)
@@ -115,20 +115,20 @@ namespace ArduinoSerial
 
         }
 
-        private void btnOnOff_Click(object sender, RoutedEventArgs e)
+        private void BtnOnOff_Click(object sender, RoutedEventArgs e)
         {
             if (!isConnected)
             {
-                connectToCOM();
+                ConnectToCOM();
             }
             else
             {
-                disconnectFromCOM();
+                DisconnectFromCOM();
             }
         }
 
         //Method that finds available COM ports
-        void findComPorts()
+        void FindComPorts()
         {
             statusBarText.Text = "Searching COM ports";
             foundPorts = SerialPort.GetPortNames();
@@ -158,7 +158,7 @@ namespace ArduinoSerial
             }
         }
 
-        private void connectToCOM()
+        private void ConnectToCOM()
         {
             if (cbComport.SelectedItem != null)
             {
@@ -177,61 +177,40 @@ namespace ArduinoSerial
                 }
                 catch (Exception)
                 {
-                    //MessageBox.Show(ex.ToString());   //create a dialog window with exception info
+                    //MessageBox.Show(ex.ToString());   //create a dialog window with exception info - we dont do that here
                     statusBarText.Text = "Oops, something went wrong";
                     statusBarRect.Fill = Brushes.DarkBlue;
                 }
             }
-            
-
-
         }
-
-        /*
-         *
-            if (SerialPort.GetPortNames().Length > 0)
-            {
-
-            }
-            else
-            {
-                disconnectFromCOM();
-            }
-        */
 
         //Recieves data from serial communication
         private void DataReceivedHandler(object sender, SerialDataReceivedEventArgs e)
         {
             SerialPort sp = (SerialPort)sender;
+            string indata = sp.ReadExisting();
+            WriteRecievedData(indata);
 
-            //if (sp.IsOpen)
-            //{
-                string indata = sp.ReadExisting();
-                writeRecievedData(indata);
-            //}
-            //else
-            //{
-            //    disconnectFromCOM();
-            //}
         }
 
         // Takes data from different thread, adding time and display it in textbox
-        private void writeRecievedData(string text)
+        private void WriteRecievedData(string text)
         {
             Dispatcher.Invoke((Action)(() =>
             {
+                /* WIP nefunguje jak má, problém se seriovou komunikací - čas se ukazuje třeba uprostřed slova které dostáváme z arduina
                 //time
                 string localTime = DateTime.Now.ToString("HH:mm:ss");
-
-                //string textWithTime = ($"[{localTime}] {text}");
-                //tbCommunication.AppendText(textWithTime);
+                string textWithTime = ($"[{localTime}] {text}");
+                tbCommunication.AppendText(textWithTime);
+                */
                 tbCommunication.AppendText(text);
                 tbCommunication.ScrollToEnd();
 
             }));
         }
 
-        private void disconnectFromCOM()
+        private void DisconnectFromCOM()
         {
             isConnected = false;
             _serialPort.Close();
@@ -240,22 +219,17 @@ namespace ArduinoSerial
             btnDisconnect.Content = "Connect";
         }
 
-        private void search_Click(object sender, RoutedEventArgs e)
+        private void Search_Click(object sender, RoutedEventArgs e)
         {
-            findComPorts();
+            FindComPorts();
         }
 
-        private void btnClear_Click(object sender, RoutedEventArgs e)
+        private void BtnClear_Click(object sender, RoutedEventArgs e)
         {
             tbCommunication.Clear();
         }
 
-        //private void textboxInformation(string text)
-        //{
-        //    tbCommunication.AppendText("====== " + text + Environment.NewLine);
-        //}
-
-        private void btnSend_Click(object sender, RoutedEventArgs e)
+        private void BtnSend_Click(object sender, RoutedEventArgs e)
         {
             string dataToSend = userInputText.ToString();
             _serialPort.Write(dataToSend);
@@ -267,12 +241,12 @@ namespace ArduinoSerial
         }
 
         //==============================SMAZAT
-        private void btnSendA(object sender, RoutedEventArgs e)
+        private void BtnSendA(object sender, RoutedEventArgs e)
         {
             _serialPort.Write("A");
         }
 
-        private void btnSendB(object sender, RoutedEventArgs e)
+        private void BtnSendB(object sender, RoutedEventArgs e)
         {
             _serialPort.Write("B");
         }
